@@ -1,30 +1,33 @@
 "use client";
+import exampleImage from "../../../../public/assets/MetaBox.png";
 import { useState } from "react";
 import Image from "next/image";
-import exampleImage from "../../../../public/assets/MetaBox.png";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import { ImAppleinc } from "react-icons/im";
-import Link from "next/link";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/config/firebase";
-function Login() {
+
+function SignIn() {
   const [email, setEmail] = useState<string>("");
   const [pass, setPass] = useState<string>("");
- 
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     signInWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(user);
-        
-        // ...
+      .then(({ user }) => {
+        localStorage.setItem("user", user.uid);
+        router.replace("/");
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+        console.log(error.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -60,9 +63,13 @@ function Login() {
         />
         <button
           type="submit"
-          className="bg-primary p-2 rounded-3xl font-bold text-[17px] mt-[10px]"
+          className="bg-primary p-2 rounded-3xl font-bold text-[17px] mt-[10px] flex justify-center items-center"
         >
-          Login
+          {!loading ? (
+            " Sign In"
+          ) : (
+            <span className="animate-spin w-[25px] h-[25px] border-[5px] border-[solid] border-[#FFF] [border-bottom-color:transparent] rounded-[50%] inline-block box-border]"></span>
+          )}
         </button>
       </form>
       <div className="flex gap-4 mt-6 justify-center items-center">
@@ -82,4 +89,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignIn;
