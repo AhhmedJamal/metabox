@@ -1,13 +1,13 @@
 "use client";
 import exampleImage from "../../../../public/assets/MetaBox.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import { ImAppleinc } from "react-icons/im";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/config/firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, providerApple, providerGoogle } from "@/config/firebase";
 
 function SignIn() {
   const [email, setEmail] = useState<string>("");
@@ -30,12 +30,40 @@ function SignIn() {
         setLoading(false);
       });
   };
-
+  const handleGoogle = () => {
+    signInWithPopup(auth, providerGoogle)
+      .then(({ user }) => {
+        localStorage.setItem("user", user.uid);
+        router.replace("/");
+      })
+      .catch((error) => {
+        console.error(error.message);
+      });
+  };
+  const handleApple = () => {
+    signInWithPopup(auth, providerApple)
+      .then(({ user }) => {
+        localStorage.setItem("user", user.uid);
+        router.replace("/");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  useEffect(() => {
+    localStorage.getItem("user") && router.replace("/");
+  }, [router]);
   return (
     <div className="m-auto w-[60%] mt-[120px] md:mt-[200px]">
       <div className="flex flex-col justify-center items-center">
         <Image src={exampleImage} alt="Logo image" className="w-[130px]" />
-        <h2 className="font-bold text-[25px]">MetaBox</h2>
+
+        <h2 className="relative font-bold text-[25px] mr-4">
+          MetaBo
+          <span className="text-primary text-[39px] absolute bottom-[-6px]">
+            x
+          </span>
+        </h2>
       </div>
       <form
         onSubmit={handleSubmit}
@@ -73,10 +101,15 @@ function SignIn() {
         </button>
       </form>
       <div className="flex gap-4 mt-6 justify-center items-center">
-        <FaGoogle size={34} className="bg-zinc-700 p-[6px] rounded-full" />
+        <FaGoogle
+          size={34}
+          className="bg-zinc-700 p-[6px] rounded-full"
+          onClick={handleGoogle}
+        />
         <ImAppleinc
           size={35}
           className="bg-zinc-700 p-[6px] rounded-full pl-[5px]"
+          onClick={handleApple}
         />
       </div>
       <div className="text-[13px] md:text-[17px]  text-zinc-400 mt-6 flex gap-2 justify-center items-center">
